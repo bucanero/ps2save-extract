@@ -1,51 +1,43 @@
-ifeq ($(OS),Windows_NT)
-	TARGET_EXEC ?= ps2-extract-win
-else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
-		TARGET_EXEC ?= ps2-extract-linux
-	endif
-    ifeq ($(UNAME_S),Darwin)
-		TARGET_EXEC ?= ps2-extract-macos
-	endif
-endif
+CC = cc
+LD = ld
 
-BUILD_DIR ?= ./build
-SRC_DIRS ?= ./src ./include
+CFLAGS = -O3 -Wall -Iinclude
+LIBS = -lm
 
-SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
-OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS:.o=.d)
+all: init ps2save-extract icon2png
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
+init:
+	@if test ! -d obj/ ; then mkdir obj ; fi
 
-CPPFLAGS ?= $(INC_FLAGS) -static -Wall -Wextra -std=c99
+ps2save-extract: obj/main.o obj/armax.o obj/xps.o obj/cbs.o obj/psu.o obj/mcs.o obj/lzari.o obj/miniz_tinfl.o
+	$(CC) $(LIBS) -o ps2save-extract obj/main.o obj/armax.o obj/xps.o obj/cbs.o obj/psu.o obj/mcs.o obj/lzari.o obj/miniz_tinfl.o
 
-$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+icon2png:
+	$(CC) $(CFLAGS) $(LIBS) -o icon2png src/icon2png.c
 
-# assembly
-$(BUILD_DIR)/%.s.o: %.s
-	$(MKDIR_P) $(dir $@)
-	$(AS) $(ASFLAGS) -c $< -o $@
+obj/main.o:
+	$(CC) $(CFLAGS) -c -o obj/main.o src/main.c
 
-# c source
-$(BUILD_DIR)/%.c.o: %.c
-	$(MKDIR_P) $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+obj/armax.o:
+	$(CC) $(CFLAGS) -c -o obj/armax.o src/armax.c
 
-# c++ source
-$(BUILD_DIR)/%.cpp.o: %.cpp
-	$(MKDIR_P) $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+obj/xps.o:
+	$(CC) $(CFLAGS) -c -o obj/xps.o src/xps.c
 
+obj/cbs.o:
+	$(CC) $(CFLAGS) -c -o obj/cbs.o src/cbs.c
 
-.PHONY: clean
+obj/psu.o:
+	$(CC) $(CFLAGS) -c -o obj/psu.o src/psu.c
+
+obj/mcs.o:
+	$(CC) $(CFLAGS) -c -o obj/mcs.o src/mcs.c
+
+obj/lzari.o:
+	$(CC) $(CFLAGS) -c -o obj/lzari.o src/lzari.c
+
+obj/miniz_tinfl.o:
+	$(CC) $(CFLAGS) -c -o obj/miniz_tinfl.o src/miniz_tinfl.c
 
 clean:
-	$(RM) -r $(BUILD_DIR)
-
--include $(DEPS)
-
-MKDIR_P ?= mkdir -p
+	@rm -Rf obj/ ps2save-extract icon2png
