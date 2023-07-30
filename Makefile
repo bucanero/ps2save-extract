@@ -4,7 +4,7 @@ LD = ld
 CFLAGS = -O3 -Wall -Iinclude
 LIBS = -lm
 
-all: init ps2save-extract icon2png
+all: init ps2save-extract icon2png tga2icon
 
 init:
 	@if test ! -d obj/ ; then mkdir obj ; fi
@@ -14,6 +14,9 @@ ps2save-extract: obj/main.o obj/armax.o obj/xps.o obj/cbs.o obj/psu.o obj/mcs.o 
 
 icon2png:
 	$(CC) $(CFLAGS) $(LIBS) -o icon2png src/icon2png.c
+
+tga2icon:
+	$(CC) $(CFLAGS) $(LIBS) -o tga2icon src/tga2icon.c
 
 obj/main.o:
 	$(CC) $(CFLAGS) -c -o obj/main.o src/main.c
@@ -40,4 +43,4 @@ obj/miniz_tinfl.o:
 	$(CC) $(CFLAGS) -c -o obj/miniz_tinfl.o src/miniz_tinfl.c
 
 clean:
-	@rm -Rf obj/ ps2save-extract icon2png
+	@rm -Rf obj/ ps2save-extract icon2png tga2icon
